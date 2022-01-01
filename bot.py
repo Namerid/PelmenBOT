@@ -1,124 +1,40 @@
 import telebot
 import config 
 import random
-import openpyxl
-import datetime
+import time
 from telebot import types
 
 bot = telebot.TeleBot(config.Token)
 
-test_for_chanell = False
-
-channel_adress = config.Channel_adress
-
 @bot.message_handler(commands = ['start'])
 def start(message):
-	user_name = '{0.first_name} {0.last_name}'.format(message.from_user)
-
 	sti = open('st/sticker.webp','rb')
 	bot.send_sticker(message.chat.id,sti)
-
-	bot.send_message(channel_adress, '{0.first_name} зашел(ла) в "Пельменную"'.format(message.from_user))
 
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 	item1 = types.KeyboardButton('Кинем монетку')
 	item4 = types.KeyboardButton('Камень, ножницы, бумага')
 	item2 = types.KeyboardButton('Рандомное число')
 	item3 = types.KeyboardButton('Рецепт пельменей')
-	item5 = types.KeyboardButton('Сообщение в канал')
 
-	markup.add(item1,item2,item3,item4,item5)
+	markup.add(item1,item2,item3,item4)
 
 	bot.send_message(message.chat.id, 'Добро пожаловать в Пельменную, {0.first_name}!\nЧто будем делать?'.format(message.from_user),
 		reply_markup=markup)
 
-	journal = open('journal.txt','r')
-	dictionary = eval(journal.read())
-	journal.close()
-
-	if user_name in dictionary.keys():
-		line_in_tabel = dictionary[str(user_name)]
-		table = openpyxl.load_workbook('tables/'+user_name+'.xlsx')
-		sheet = table.active	
-	else:
-		journal = open('journal.txt','w')
-		
-		line_in_tabel = 2
-		dictionary[str(user_name)] = 2
-		journal.write(str(dictionary))
-		
-		table = openpyxl.Workbook()
-		sheet = table.active
-		sheet.title = str(message.from_user.id)
-		
-		sheet['A1'] = 'action'
-		sheet['B1'] = 'date'
-
-		journal.close()
-	
-	table.save('tables/{}.xlsx'.format(user_name))
-
 @bot.message_handler(content_types=['text'])
 def lalala(message):
-	global test_for_chanell
-	
-	user_name = '{0.first_name} {0.last_name}'.format(message.from_user)
-	journal = open('journal.txt', 'r')
-	dictionary = eval(journal.read())
-	journal.close()
-	
 	if message.chat.type == 'private':
 		if message.text == 'Кинем монетку':
-
+			
 			markup = types.InlineKeyboardMarkup(row_width=2)
 			item1 = types.InlineKeyboardButton('Орел', callback_data='o')
 			item2 = types.InlineKeyboardButton('Решка', callback_data='r')
+		
 			markup.add(item1,item2)
 
 			bot.send_message(message.chat.id, 'Загадай сторону' , reply_markup=markup)
-
-			journal = open('journal.txt', 'w')
-			line_in_tabel = dictionary[str(user_name)]
-
-			table = openpyxl.load_workbook('tables/'+str(user_name)+'.xlsx')
-			
-			sheet = table.active
-
-			bot.send_message(channel_adress, '{} кидает монетку'.format(user_name))
-
-			sheet['A'+str(line_in_tabel)] = 'Кинул(а) монетку'
-			sheet['B'+str(line_in_tabel)] = str(datetime.datetime.now())[0:19]
-
-			table.save('tables/{}.xlsx'.format(user_name))
-
-			line_in_tabel += 1
-			dictionary[str(user_name)] = line_in_tabel
-			
-			journal.write(str(dictionary))
-			journal.close()
-
 		elif message.text == 'Рандомное число':
-
-			journal = open('journal.txt', 'w')
-			line_in_tabel = dictionary[str(user_name)]
-
-			table = openpyxl.load_workbook('tables/'+str(user_name)+'.xlsx')
-			
-			sheet = table.active
-
-			bot.send_message(channel_adress, '{} узнает рандомное число'.format(user_name))
-
-			sheet['A'+str(line_in_tabel)] = 'Узнает рандомное число'
-			sheet['B'+str(line_in_tabel)] = str(datetime.datetime.now())[0:19]
-
-			table.save('tables/{}.xlsx'.format(user_name))
-
-			line_in_tabel += 1
-			dictionary[str(user_name)] = line_in_tabel
-			
-			journal.write(str(dictionary))
-			journal.close()
-
 			bot.send_message(message.chat.id, random.randint(1,100))
 		elif message.text == 'Рецепт пельменей':
 			
@@ -128,26 +44,6 @@ def lalala(message):
 			sh4 = open('st/шаг 4.jpg','rb')
 			sh5 = open('st/шаг 5.jpg','rb')
 			sh6 = open('st/шаг 6.jpg','rb')
-
-			journal = open('journal.txt', 'w')
-			line_in_tabel = dictionary[str(user_name)]
-
-			table = openpyxl.load_workbook('tables/'+str(user_name)+'.xlsx')
-			
-			sheet = table.active
-
-			bot.send_message(channel_adress, '{} узнает рецепт пельменей'.format(user_name))
-
-			sheet['A'+str(line_in_tabel)] = 'Узнает рецепт пельменей'
-			sheet['B'+str(line_in_tabel)] = str(datetime.datetime.now())[0:19]
-
-			table.save('tables/{}.xlsx'.format(user_name))
-
-			line_in_tabel += 1
-			dictionary[str(user_name)] = line_in_tabel
-			
-			journal.write(str(dictionary))
-			journal.close()
 
 			bot.send_message(message.chat.id,'ИНГРЕДИЕНТЫ\n*1 яйцо\n*1 стакан воды\n*1 ч. л. соли\n*600 г пшеничной муки\nДЛЯ НАЧИНКИ:\n*250 г говяжьего фарша\n*250 г свиного фарша\n*1 большая луковица\n*1 зубчик чеснока')
 			
@@ -182,38 +78,10 @@ def lalala(message):
 			item1 = types.InlineKeyboardButton('Камень', callback_data='rock')
 			item2 = types.InlineKeyboardButton('Ножницы', callback_data='scissors')
 			item3 = types.InlineKeyboardButton('Бумага', callback_data='paper')
+		
 			markup.add(item1,item2,item3)
 
-			journal = open('journal.txt', 'w')
-			line_in_tabel = dictionary[str(user_name)]
-
-			table = openpyxl.load_workbook('tables/'+str(user_name)+'.xlsx')
-			
-			sheet = table.active
-
-			bot.send_message(channel_adress, '{} играет в "Камень, ножницы, бумага"'.format(user_name))
-
-			sheet['A'+str(line_in_tabel)] = 'Играет в "Камень, ножницы, бумага"'
-			sheet['B'+str(line_in_tabel)] = str(datetime.datetime.now())[0:19]
-
-			table.save('tables/{}.xlsx'.format(user_name))
-
-			line_in_tabel += 1
-			dictionary[str(user_name)] = line_in_tabel
-			
-			journal.write(str(dictionary))
-			journal.close()
-
 			bot.send_message(message.chat.id, 'Твой выбор' , reply_markup=markup)
-
-		elif message.text == 'Сообщение в канал':
-
-			bot.send_message(message.chat.id, 'введите сообщение:')
-			
-			test_for_chanell = True
-		elif test_for_chanell == True:
-			bot.send_message(channel_adress, message.text)
-			test_for_chanell = False
 		else:
 			bot.send_message(message.chat.id, 'Я не знаю что ответить 🤷')
 
